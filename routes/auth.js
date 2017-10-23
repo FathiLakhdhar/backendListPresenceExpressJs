@@ -6,6 +6,7 @@ var configKnex = require('../knexfile');
 var knex = require('knex')(configKnex.development);
 var isEmpty = require('lodash/isEmpty');
 var Validator = require('validator');
+var privateKey = require('../private.key');
 
 
 /** POST SIGNUP */
@@ -95,8 +96,7 @@ router.post('/login', function (req, res, next) {
                         { 
                             firstname: user.firstname,
                             surname: user.surname,
-                            email: user.email, 
-                            password: user.pwd,
+                            email: user.email,
                             isActive: user.isActive,
                             age: user.age,
                             gender: user.gender,
@@ -104,7 +104,7 @@ router.post('/login', function (req, res, next) {
                             role: user.role_id
 
                         },
-                        'secrettokenkey'
+                        privateKey
                     ),
                 });
             }else{
