@@ -6,7 +6,8 @@ exports.up = function (knex, Promise) {
         /* foreign + primary key */
         t.dropPrimary('users_has_roles_pkey');
         t.primary(['user_id', 'role_id']);
-        t.foreign(['user_id', 'role_id']).references(['users.user_is', 'roles.role_id']);
+        t.foreign('user_id').references('users.user_is');
+        t.foreign('role_id').references('roles.role_id');
     });
 };
 

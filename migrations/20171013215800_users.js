@@ -18,8 +18,10 @@ exports.up = function(knex, Promise) {
     table.string('classe_name', 45);
     table.string('classe_year', 4);
     table.integer('classe_numGroup');
-    table.foreign(['classe_name', 'classe_year', 'classe_numGroup']).references(['classes.name', 'classes.year', 'classes.numGroup']);
-
+    
+    table.foreign('classe_name').references('classes.name');
+    table.foreign('classe_year').references('classes.year');
+    table.foreign('classe_numGroup').references('classes.numGroup');
   });
 };
 

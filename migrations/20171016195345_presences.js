@@ -13,7 +13,8 @@ exports.up = function(knex, Promise) {
         t.dropPrimary('presences_pkey');
 
         t.primary(['datePresence', 'timePresenceStart', 'timePresenceEnd', 'user_id', 'responsable_id']);
-        t.foreign(['user_id', 'responsable_id']).references(['users.user_id', 'users.user_id'])
+        t.foreign('user_id').references('users.user_id');
+        t.foreign('responsable_id').references('users.user_id');
     });
 };
 
