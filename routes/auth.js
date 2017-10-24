@@ -13,8 +13,8 @@ var privateKey = require('../private.key');
 
 router.post('/signup', function (req, res, next) {
     const { firstname, surname, email, password, age, gender } = req.body;
-    
-    const {errors, isValid} = validateForm(req.body);
+
+    const { errors, isValid } = validateForm(req.body);
 
     if (isValid) {
         knex('users').insert({
@@ -28,14 +28,14 @@ router.post('/signup', function (req, res, next) {
             registeredAt: new Date(),
         }, 'user_id').then(
             ids => {
-                console.log('user_id : ',ids);
+                console.log('user_id : ', ids);
                 knex('users_has_roles').insert({
                     user_id: ids[0],
                     role_id: 'ROLE_ANONYMOUS'
                 }).then(
-                    ()=> res.json({ action: 'SIGNUP_ACTION', success: true }),
-                    ()=> res.status(500).json({ action: 'SIGNUP_ACTION', success: false, errors: { form: 'Invalid roles' } })  
-                );
+                    () => res.json({ action: 'SIGNUP_ACTION', success: true }),
+                    () => res.status(500).json({ action: 'SIGNUP_ACTION', success: false, errors: { form: 'Invalid roles' } })
+                    );
             },
             err => res.status(500).json({ action: 'SIGNUP_ACTION', success: false, errors: { form: 'Invalid Credentials' } })
             );
@@ -55,15 +55,15 @@ function validateForm(f) {
         errors.surname = 'This field is required';
     if (!Validator.isEmail(f.email))
         errors.email = 'Email is invalid';
-    if (Validator.isEmpty(f.password)){
+    if (Validator.isEmpty(f.password)) {
         errors.password = 'This field is required';
-    }else
+    } else
         if (!Validator.isLength(f.password, { min: 8, max: 20 }))
             errors.password = 'Password is invalid {min:8, max:20} charater';
-    if (Validator.isEmpty(f.age)){
+    if (Validator.isEmpty(f.age)) {
         errors.age = 'This field is required';
-    }else 
-        if(!Validator.isNumeric(f.age))
+    } else
+        if (!Validator.isNumeric(f.age))
             errors.age = 'Age is invalid';
 
     return { errors, isValid: isEmpty(errors) };
@@ -81,33 +81,35 @@ router.post('/login', function (req, res, next) {
     const isExist = false;
 
     knex.first().from('users')
-    .join('users_has_roles', 'users.user_id', '=', 'users_has_roles.user_id')
-    .where({
-        email,
-        pwd: crypted_password
-    }).then(
+        .where({
+            email,
+            pwd: crypted_password
+        }).then(
         (user) => {
             console.log(user);
-            if(user){
-                res.json({
-                    success: true,
-                    errors: {},
-                    token: jwt.sign(
-                        { 
-                            firstname: user.firstname,
-                            surname: user.surname,
-                            email: user.email,
-                            isActive: user.isActive,
-                            age: user.age,
-                            gender: user.gender,
-                            registeredAt: user.registeredAt,
-                            role: user.role_id
+            if (user) {
+                knex.select('role_id').from('users_has_roles').where({ user_id: user.user_id })
+                    .then(roles =>
+                        res.json({
+                            success: true,
+                            errors: {},
+                            token: jwt.sign(
+                                {
+                                    firstname: user.firstname,
+                                    surname: user.surname,
+                                    email: user.email,
+                                    isActive: user.isActive,
+                                    age: user.age,
+                                    gender: user.gender,
+                                    registeredAt: user.registeredAt,
+                                    roles: roles.map(r=> r.role_id)
+                                },
+                                privateKey
+                            ),
+                        })
+                    ).catch(e=> res.status(401).json({ errors: { form: 'Error roles' } }));
 
-                        },
-                        privateKey
-                    ),
-                });
-            }else{
+            } else {
                 res.status(401);
                 res.json({ errors: { form: 'Invalid Credentials' } });
             }
