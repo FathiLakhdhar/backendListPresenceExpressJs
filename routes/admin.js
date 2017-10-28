@@ -6,7 +6,7 @@ var configKnex = require('../knexfile');
 var knex = require('knex')(configKnex.development);
 
 
-router.post('/newlpt', (req, res, next) => {
+router.post('/newlp', (req, res, next) => {
     let authorization = req.headers.authorization.split(" ")[1];
     jwt.verify(authorization, privateKey, function (err, decoded) {
         if (err) {
